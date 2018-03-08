@@ -31,6 +31,14 @@
             >
             </ch-button>
         </ch-button-group>
+        <hr>
+        <h3 class="title is-3">
+            Calendar
+        </h3>
+        <p class="spaced">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.
+        </p>
+        <ch-calendar></ch-calendar>
     </ch-section>
 </template>
 
@@ -40,12 +48,14 @@ import { mapGetters, mapActions } from 'vuex'
 
 import ChButton from '../ch-components/elements/Button.vue'
 import ChButtonGroup from '../ch-components/elements/ButtonGroup.vue'
+import ChCalendar from '../ch-components/calendar/Calendar.vue'
 import ChSection from '../ch-components/layout/Section.vue'
 
 export default {
     components: {
         ChButton,
         ChButtonGroup,
+        ChCalendar,
         ChSection
     },
     computed: {
