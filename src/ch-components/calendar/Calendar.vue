@@ -243,10 +243,12 @@ export default {
 <style lang="scss">
 $themeColor: dodgerblue;
 
+$calendar-grey: #cccccc;
+
 $headerPadding: 0.5rem 1rem;
 $headerBorderWidth: 1px;
 $headerBorderStyle: solid;
-$headerBorderColor: #aaaaaa;
+$headerBorderColor: $calendar-grey;
 $headerBackground: $themeColor;
 $headerColor: white;
 
@@ -254,11 +256,10 @@ $weekdayPadding: 0.4rem 0;
 $weekdayColor: #7a7a7a;
 $weekdayBorderWidth: 1px;
 $weekdayBorderStyle: solid;
-$weekdayBorderColor: #aaaaaa;
-$weekdayBackground: #eaeaea;
+$weekdayBorderColor: $calendar-grey;
 
 $dayColor: #3a3a3a;
-$dayBorder: solid 1px #aaaaaa;
+$dayBorder: solid 1px $calendar-grey;
 $dayBackgroundColor: white;
 $dayWidth: 14.2857%;
 $dayHeight: 50px;
