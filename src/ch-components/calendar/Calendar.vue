@@ -37,7 +37,7 @@
                 class="weekday"
                 v-for="weekday in weekdays"
             >
-                {{ weekday.label }}
+                {{ weekday.label_3 }}
             </div>
         </div>
         <div
@@ -121,17 +121,21 @@ export default {
         },
         months() {
             return _monthLabels.map((ml, i) => ({
-                label: _transformLabel(ml, _monthLength, _monthCasing),
-                number: i + 1
+                label: ml,
+                label_1: ml.substring(0, 1),
+                label_2: ml.substring(0, 2),
+                label_3: ml.substring(0, 3),
+                number: i + 1,
             }))
         },
         weekdays() {
-            return _weekdayLabels.map((wl, i) => {
-                return {
-                    label: _transformLabel(wl, _weekdayLength, _weekdayCasing),
-                    number: i + 1
-                }
-            })
+            return _weekdayLabels.map((wl, i) => ({
+                label: wl,
+                label_1: wl.substring(0, 1),
+                label_2: wl.substring(0, 2),
+                label_3: wl.substring(0, 3),
+                number: i + 1,
+            }))
         },
         header() {
             const month = this.months[this.monthIndex]
@@ -146,60 +150,67 @@ export default {
             return new Date(this.year, this.monthIndex, 1).getDay() + 1
         },
         daysInMonth() {
-            const isFebruary = this.month === 2
-            const isLeapYear = (this.year % 4 == 0 && this.year % 100 != 0) || this.year % 400 == 0
-
-            if (isFebruary && isLeapYear) {
-                return 29
-            }
+            if (this.month === 2 && this.isLeapYear) return 29;
 
             return _daysInMonths[this.monthIndex]
         },
         weeks() {
             const weeks = []
 
-            let monthStarted = false
-            let monthEnded = false
-            let monthDay = 0
+            let previousMonth = true
+            let thisMonth = false
+            let nextMonth = false
+
+            let day = this.previousMonthComps.days - this.firstWeekdayInMonth + 2
+            let month = this.previousMonthComps.month
+            let year = this.previousMonthComps.year
 
             // Cycle through each week of the month, up to 6 total
-            for (let w = 1; w <= 6 && !monthEnded; w++) {
+            for (let w = 1; w <= 6 && !nextMonth; w++) {
                 const week = []
 
                 for (let d = 1; d <= 7; d++) {
                     // We need to know when to start counting actual month days
-                    if (!monthStarted && d >= this.firstWeekdayInMonth) {
-                        // Initialize day counter
-                        monthDay = 1
+                    if (previousMonth && d >= this.firstWeekdayInMonth) {
+                        // Reset day/month/year counters
+                        day = 1;
+                        month = this.month;
+                        year = this.year;
                         // ...and flag we're tracking actual month days
-                        monthStarted = true
-                    // Still in the middle of the month (hasn't ended yet)
-                    } else if (monthStarted && !monthEnded) {
-                        // Increment the day counter
-                        monthDay += 1
+                        previousMonth = false;
+                        thisMonth = true;
                     }
 
                     // Append day info for the current week
                     // Note: this might or might not be an actual month day
                     //  We don't know how the UI wants to display various days,
                     //  so we'll supply all the data we can
-                    week.push({
-                        label: monthDay ? monthDay.toString(): '',
-                        number: monthDay,
-                        weekdayNumber: d,
-                        weekNumber: w,
-                        beforeMonth: !monthStarted,
-                        afterMonth: monthEnded,
-                        inMonth: monthStarted && !monthEnded,
-                        isToday: (monthDay === _todayComps.day) && (this.month === _todayComps.month) && (this.year === _todayComps.year),
-                        isFirstDay: monthDay === 1,
-                        isLastDay: monthDay === this.daysInMonth
+                    week.push ({
+                        label: (day && thisMonth) ? day.toString() : '',
+                        day,
+                        weekday: d,
+                        week: w,
+                        month,
+                        year,
+                        date: new Date(year, month - 1, day),
+                        beforeMonth: previousMonth,
+                        afterMonth: nextMonth,
+                        inMonth: thisMonth,
+                        isToday: day === _todayComps.day && month === _todayComps.month && year === _todayComps.year,
+                        isFirstDay: thisMonth && day === 1,
+                        isLastDay: thisMonth && day === this.daysInMonth,
                     })
 
-                    // Trigger end of month on the last day
-                    if (monthStarted && !monthEnded && monthDay >= this.daysInMonth) {
-                        monthDay = 0
-                        monthEnded = true
+                    // We've hit the last day of the month
+                    if (thisMonth && day >= this.daysInMonth) {
+                        thisMonth = false;
+                        nextMonth = true;
+                        day = 1;
+                        month = this.nextMonthComps.month;
+                        year = this.nextMonthComps.year;
+                        // Still in the middle of the month (hasn't ended yet)
+                    } else {
+                        day++;
                     }
                 }
 
@@ -207,6 +218,35 @@ export default {
             }
 
             return weeks
+        },
+        isLeapYear() {
+            return (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0
+        },
+        previousMonthComps() {
+            if (this.month === 1) return {
+                days: _daysInMonths[11],
+                month: 12,
+                year: this.year - 1
+            }
+
+            return {
+                days: (this.month === 3 && this.isLeapYear) ? 29 : _daysInMonths[this.monthIndex - 1],
+                month: this.month - 1,
+                year: this.year
+            }
+        },
+        nextMonthComps() {
+            if (this.month === 12) return {
+                days: _daysInMonths[0],
+                month: 1,
+                year: this.year + 1
+            }
+
+            return {
+                days: (this.month === 1 && this.isLeapYear) ? 29 : _daysInMonths[this.monthIndex + 1],
+                month: this.month + 1,
+                year: this.year
+            }
         }
     },
     methods: {
@@ -215,20 +255,14 @@ export default {
             this.year = _todayComps.year
         },
         moveNextMonth() {
-            if (this.month < 12) {
-                this.month++
-            } else {
-                this.month = 1
-                this.year++
-            }
+            const { month, year } = this.nextMonthComps
+            this.month = month
+            this.year = year
         },
         movePreviousMonth() {
-            if (this.month > 1) {
-                this.month--
-            } else {
-                this.month = 12
-                this.year--
-            }
+            const { month, year } = this.previousMonthComps
+            this.month = month
+            this.year = year
         },
         moveNextYear() {
             this.year++
