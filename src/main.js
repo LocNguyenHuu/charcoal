@@ -1,9 +1,7 @@
 import Vue from 'vue'
-import App from './App'
-import router from './router'
-import store from './store'
 import axios from 'axios'
-
+import firebase from 'firebase/app'
+import 'firebase/firestore'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
     faAngleDown,
@@ -14,13 +12,36 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
+import App from './App.vue'
+import firebaseConfig from './firebase/config'
+import router from './router'
+import store from './store'
+
+// Vue config
+Vue.config.productionTip = false
+
+// Convenience
+Vue.prototype.$http = axios
+
+// Firebase
+firebase.initializeApp(firebaseConfig).firestore()
+
+// FontAwesome
 library.add(faAngleDown, faHome, faBook, faPencilAlt, faSignInAlt)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
-Vue.config.productionTip = false
+// Router
+router.beforeEach((to, from, next) => {
+    // redirect to login page if not logged in and trying to access a restricted page
+    const publicPages = ['/login', '/sign-up']
+    const authRequired = !publicPages.includes(to.path)
 
-// Convenience item - this.$http
-Vue.prototype.$http = axios
+    if (authRequired) {
+        return next('/login')
+    }
+
+    next()
+})
 
 new Vue({
     router,

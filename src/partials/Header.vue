@@ -13,6 +13,7 @@
             class="navbar-item"
             slot="navbar-end"
             to="/about"
+            v-show="isAuthenticated"
         >
             <font-awesome-icon icon="book" />
             About
@@ -21,10 +22,10 @@
             active-class="is-active"
             class="navbar-item"
             slot="navbar-end"
-            to="/sign-up"
+            to="/register"
         >
             <font-awesome-icon icon="pencil-alt" />
-            Sign Up
+            Register
         </router-link>
         <router-link
             active-class="is-active"
@@ -35,6 +36,15 @@
             <font-awesome-icon icon="sign-in-alt" />
             Login
         </router-link>
+        <router-link
+            class="navbar-item"
+            slot="navbar-end"
+            to="/login"
+            v-show="isAuthenticated"
+        >
+            <font-awesome-icon icon="sign-in-alt" />
+            Logout
+        </router-link>
     </ch-navbar>
 </template>
 
@@ -42,6 +52,11 @@
 import ChNavbar from '@/ch-components/components/Navbar.vue'
 
 export default {
+    data() {
+        return {
+            isAuthenticated: false
+        }
+    },
     components: {
         ChNavbar
     }

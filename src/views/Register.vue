@@ -1,12 +1,12 @@
 <template>
-    <ch-section class="login-container">
+    <ch-section class="register-container">
         <ch-columns>
             <ch-column class="is-6-tablet is-offset-3-tablet is-one-third-desktop is-offset-one-third-desktop">
                 <h1 class="title is-1">
-                    Login
+                    Register
                 </h1>
                 <ch-box>
-                    <form @submit.prevent="login">
+                    <form @submit.prevent="postNewUser">
                         <ch-input
                             label="Email"
                             placeholder="Enter your email"
@@ -24,14 +24,10 @@
                         <ch-button
                             class="is-danger"
                             type="submit"
-                            text="Login"
+                            text="Register"
                         >
                         </ch-button>
                     </form>
-                    <hr>
-                    <p>
-                        Not a member? <router-link to="/register">Register</router-link>
-                    </p>
                 </ch-box>
             </ch-column>
         </ch-columns>
@@ -39,7 +35,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import firebase from 'firebase'
 
 import ChBox from '@/ch-components/elements/Box.vue'
 import ChButton from '@/ch-components/elements/Button.vue'
@@ -56,20 +52,20 @@ export default {
         }
     },
     components: {
-        ChBox,
-        ChButton,
         ChColumn,
         ChColumns,
-        ChInput,
-        ChSection
+        ChSection,
+        ChBox,
+        ChButton,
+        ChInput
     },
     methods: {
-        ...mapActions(['postLogin']),
-        login() {
-            this.postLogin({
-                email: this.email,
-                password: this.password
-            }).then(() => this.$router.push('/'))
+        postNewUser() {
+            firebase
+                .auth()
+                .createUserWithEmailAndPassword(this.email, this.password)
+                .then(() => this.$router.push('/login'))
+                .catch(err => console.log(err))
         }
     }
 }
